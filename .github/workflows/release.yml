@@ -153,7 +153,7 @@ jobs:
             ${{ env.py }}  setup.py bdist_wheel && \
             auditwheel repair dist/*.whl --wheel-dir dist/ && \
             ${{ env.py }} -m pip install --pre httptools -f "file:///${GITHUB_WORKSPACE}/dist" && \
-            echo $PATH && find / -type f -name pytest && pytest tests/__init__.py \
+            echo $PATH && find / -type f -name pytest && ${{ env.py }} -m pytest tests/__init__.py \
           '
     - uses: actions/upload-artifact@v1
       with:

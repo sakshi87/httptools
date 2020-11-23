@@ -154,7 +154,7 @@ jobs:
             git submodule update --init && \
             python setup.py bdist_wheel && \
             auditwheel repair dist/*.whl --wheel-dir dist/ && \
-            pip install --pre httptools -f "file:///${GITHUB_WORKSPACE}/dist" && \
+            pip install --pre httptools -f "file:///ws/dist" && \
             pytest tests/__init__.py \
           '
     - uses: actions/upload-artifact@v1

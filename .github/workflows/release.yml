@@ -147,13 +147,13 @@ jobs:
         docker run --rm -v ${{ github.workspace }}:/ws:rw --workdir=/ws \
           ${{ env.img }} \
           bash -exc '${{ env.py }} -m pip install virtualenv && ${{ env.py }} -m venv .env && source .env/bin/activate && \
-            ${{ env.py }} -m pip install --upgrade setuptools pip wheel~=0.31.1 pytest && find / -type f -name pytest && export PATH=/opt/_internal/cpython-*/bin:$PATH && echo $PATH  && whereis pytest &&\
+            pip install --upgrade setuptools pip wheel~=0.31.1 pytest && find / -type f -name pytest && export PATH=/opt/_internal/cpython-*/bin:$PATH && echo $PATH  && whereis pytest &&\
             make clean && \
             git submodule update --init && \
-            ${{ env.py }}  setup.py bdist_wheel && \
+            python setup.py bdist_wheel && \
             auditwheel repair dist/*.whl --wheel-dir dist/ && \
-            ${{ env.py }} -m pip install --pre httptools -f "file:///${GITHUB_WORKSPACE}/dist" && \
-            echo $PATH && find / -type f -name pytest && ${{ env.py }} -m pytest tests/__init__.py \
+            pip install --pre httptools -f "file:///${GITHUB_WORKSPACE}/dist" && \
+            echo $PATH && find / -type f -name pytest && pytest tests/__init__.py \
           '
     - uses: actions/upload-artifact@v1
       with:

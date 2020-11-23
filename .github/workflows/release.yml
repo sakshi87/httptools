@@ -147,7 +147,7 @@ jobs:
         docker run --rm -v ${{ github.workspace }}:/ws:rw --workdir=/ws \
           ${{ env.img }} \
           bash -exc '\
-            ${{ env.py }} -m pip install --upgrade setuptools pip wheel~=0.31.1 pytest virtualenv && ${{ env.py }} -m venv .venv && source .venv/bin/activate && find / -type f -name pytest && export PATH=/opt/_internal/cpython-3.8.6/bin:$PATH && echo $PATH &&\
+            ${{ env.py }} -m pip install --upgrade setuptools pip wheel~=0.31.1 pytest && find / -type f -name pytest && export PATH=/opt/_internal/cpython-*/bin:$PATH && echo $PATH &&\
             make clean && \
             git submodule update --init && \
             ${{ env.py }}  setup.py bdist_wheel && \

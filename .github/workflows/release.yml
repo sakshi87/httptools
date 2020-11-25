@@ -65,7 +65,7 @@ jobs:
         path: dist/
 
   build-wheels:
-    needs: validate-release-request
+    #needs: validate-release-request
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

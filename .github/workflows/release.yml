@@ -156,6 +156,8 @@ jobs:
             auditwheel repair dist/*.whl --wheel-dir dist/ && \
             pip install --pre httptools -f "file:///ws/dist" && \
             pytest tests/__init__.py'
+    - name: List artifacts
+      run: pwd && ls -l && ls -l dist/
     - uses: actions/upload-artifact@v1
       with:
         name: dist

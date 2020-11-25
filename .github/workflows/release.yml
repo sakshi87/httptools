@@ -152,6 +152,7 @@ jobs:
             pip install --upgrade setuptools pip wheel~=0.31.1 pytest && \
             make clean && \
             git submodule update --init && \
+            make && \
             python setup.py bdist_wheel && \
             auditwheel repair dist/*.whl --wheel-dir dist/ && \
             pip install --pre httptools -f "file:///ws/dist" && \

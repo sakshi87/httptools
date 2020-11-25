@@ -5,9 +5,11 @@ on:
     branches:
       - master
       - ci
+      - test
   pull_request:
     branches:
       - master
+      - test
 
 jobs:
   build:

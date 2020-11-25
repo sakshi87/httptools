@@ -5,9 +5,14 @@ on:
     branches:
       - master
       - "ci"
+      - test
       - "[0-9]+.[0-9x]+*"
     paths:
       - "httptools/_version.py"
+  pull_request:
+    branches:
+      - master
+      - test
 
 jobs:
   validate-release-request:
@@ -60,7 +65,7 @@ jobs:
         path: dist/
 
   build-wheels:
-    needs: validate-release-request
+    #needs: validate-release-request
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -127,39 +132,40 @@ jobs:
       py: /opt/python/${{ matrix.pyver }}/bin/python
       img: quay.io/pypa/manylinux2014_${{ matrix.arch }}
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 50
+        submodules: true
     - name: Set up QEMU
       id: qemu
       uses: docker/setup-qemu-action@v1
     - name: Available platforms
       run: echo ${{ steps.qemu.outputs.platforms }}
-    - name: Install tools and pip
-      run: |
-        docker run --rm -v ${{ github.workspace }}:/ws:rw --workdir=/ws \
-          ${{ env.img }} ${{ env.py }} -m pip install --upgrade setuptools pip wheel
-    - name: Build Wheels (linux)
-      if: startsWith(matrix.os, 'ubuntu')
-      uses: docker://quay.io/pypa/manylinux2014_aarch64
-      env:
-        PYTHON_VERSION: ${{ env.py }}
-      with:
-        entrypoint: /github/workspace/.github/workflows/build-manylinux-wheels.sh
-    - name: Test Wheels
+    - name: Install Wheels
       if: |
         !startsWith(matrix.os, 'windows')
         && !contains(github.event.pull_request.labels.*.name, 'skip wheel tests')
       run: |
         docker run --rm -v ${{ github.workspace }}:/ws:rw --workdir=/ws \
-          ${{ env.img }} ${{ env.py }} -m pip install --pre httptools -f "file:///${GITHUB_WORKSPACE}/dist"
-          ${{ env.img }} make -C "${GITHUB_WORKSPACE}" testinstalled
+          ${{ env.img }} \
+          bash -exc '${{ env.py }} -m pip install virtualenv && ${{ env.py }} -m venv .env && \
+            source .env/bin/activate && \
+            pip install --upgrade setuptools pip wheel~=0.31.1 pytest && \
+            make clean && make && \
+            python setup.py bdist_wheel && \
+            auditwheel repair dist/*.whl --wheel-dir dist/ && \
+            rm -f dist/*-linux_*.whl && \
+            pip install --pre httptools -f "file:///ws/dist" && \
+            pytest tests/__init__.py'
+    - name: List artifacts
+      run: pwd && ls -l && ls -l dist/
     - uses: actions/upload-artifact@v1
       with:
         name: dist
         path: dist/
 
   publish:
-    needs: [build-sdist, build-wheels, build-linux-arm64]
+    needs: [build-sdist, build-wheels, build-linux-aarch64]
     runs-on: ubuntu-latest
 
     steps:

@@ -132,8 +132,10 @@ jobs:
       py: /opt/python/${{ matrix.pyver }}/bin/python
       img: quay.io/pypa/manylinux2014_${{ matrix.arch }}
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 50
+        submodules: true
     - name: Set up QEMU
       id: qemu
       uses: docker/setup-qemu-action@v1
@@ -146,18 +148,14 @@ jobs:
       run: |
         docker run --rm -v ${{ github.workspace }}:/ws:rw --workdir=/ws \
           ${{ env.img }} \
-          bash -exc '${{ env.py }} -m pip install virtualenv && \
-            ${{ env.py }} -m venv .env && \
+          bash -exc '${{ env.py }} -m pip install virtualenv && ${{ env.py }} -m venv .env && \
             source .env/bin/activate && \
             pip install --upgrade setuptools pip wheel~=0.31.1 pytest && \
-            make clean && \
-            git submodule update --init && \
-            make && \
+            make clean && make && \
             python setup.py bdist_wheel && \
             auditwheel repair dist/*.whl --wheel-dir dist/ && \
             pip install --pre httptools -f "file:///ws/dist" && \
-            pytest tests/__init__.py \
-          '
+            pytest tests/__init__.py'
     - uses: actions/upload-artifact@v1
       with:
         name: dist
